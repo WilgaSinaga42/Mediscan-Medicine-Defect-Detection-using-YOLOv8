@@ -1,0 +1,8 @@
+path: C:/mediscan/dataset_kemasan
+
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 2
+names: ['Kemasan', 'Cacat']
