@@ -8,7 +8,6 @@ import os
 app = Flask(__name__)
 
 # --- KONFIGURASI MODEL ---
-# Pastikan path ini mengarah ke model hasil training GPU Anda
 MODEL_PATH = "runs/detect/Train_GPU_RTX20507/weights/best.pt"
 
 if not os.path.exists(MODEL_PATH):
@@ -17,22 +16,19 @@ else:
     print(f"✅ Model dimuat dari: {MODEL_PATH}")
 
 MODEL = YOLO(MODEL_PATH)
+CONF_THRESHOLD = 0.50
 
-# === PERBAIKAN LABEL (PENTING) ===
-# Kita memaksa model menggunakan nama kelas yang benar.
-# Jika hasil Anda masih terbalik, tukar posisi 'Kemasan' dan 'Cacat' di bawah ini.
-MODEL.names = {0: 'Kemasan', 1: 'Cacat'} 
-# =================================
-
-CONF_THRESHOLD = 0.50 # Ambang batas keyakinan
+# === DEFINISI NAMA KELAS MANUAL (SOLUSI PASTI) ===
+# Kita definisikan mapping sendiri. Tidak perlu mengubah internal model.
+# 0 = Kemasan, 1 = Cacat
+CUSTOM_NAMES = {0: 'Kemasan', 1: 'Cacat'}
+# =================================================
 
 # --- FUNGSI ANALISIS GAMBAR ---
 def analyze_image(image_bytes):
-    # Buka gambar dari bytes
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     img_np = np.array(image)
     
-    # Prediksi dengan YOLO
     results = MODEL.predict(source=img_np, conf=CONF_THRESHOLD, verbose=False)
     
     is_defective = False
@@ -41,11 +37,12 @@ def analyze_image(image_bytes):
     for r in results:
         for box in r.boxes:
             class_id = int(box.cls[0])
-            # Mengambil nama kelas dari dictionary yang sudah kita paksa di atas
-            class_name = MODEL.names[class_id] 
-            confidence = float(box.conf[0])
             
-            # Simpan koordinat (x1, y1, x2, y2)
+            # --- MENGGUNAKAN CUSTOM MAPPING ---
+            # Gunakan dictionary kita sendiri, bukan MODEL.names
+            class_name = CUSTOM_NAMES.get(class_id, "Unknown") 
+            
+            confidence = float(box.conf[0])
             coords = box.xyxy[0].tolist()
             
             detections.append({
@@ -63,10 +60,8 @@ def analyze_image(image_bytes):
     return status, detections
 
 # --- ROUTES / HALAMAN ---
-
 @app.route('/')
 def index():
-    # Langsung tampilkan halaman utama tanpa login
     return render_template('index.html')
 
 # --- API PREDIKSI ---
