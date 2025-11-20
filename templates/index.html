@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mediscan Real-time</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💊 Mediscan AI</h1>
+            <p>Arahkan kamera ke kemasan obat</p>
+        </div>
+
+        <div class="monitor-frame">
+            <video id="webcam-video" autoplay muted playsinline></video>
+            <canvas id="webcam-canvas"></canvas>
+            
+            <div id="status-overlay" class="status-loading">Menunggu Kamera...</div>
+        </div>
+
+        <div class="footer-info">
+            <p>Deteksi berjalan otomatis.</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

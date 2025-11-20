@@ -1,0 +1,5 @@
+dataset_kemasan/
+runs/
+__pycache__/
+*.pt
+.vscode/
